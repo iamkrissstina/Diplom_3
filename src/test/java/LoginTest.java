@@ -1,6 +1,9 @@
 
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
+import io.restassured.RestAssured;
+import model.LoginUser;
+import model.UserModelCreate;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -11,15 +14,28 @@ import page.MainPage;
 import page.RecoverPasswordPage;
 import page.RegisterPage;
 
+import static data.UserData.generateValidUser;
+import static org.apache.http.HttpStatus.SC_OK;
+import static page.MainPage.URL_MAIN;
+
 
 public class LoginTest extends BaseTestUI {
+    UserModelCreate user;
+    LoginUser loginUser;
     @Before
     public void createUser() {
-         Helper.createUserApi();
+        RestAssured.baseURI = URL_MAIN;
+        user = generateValidUser();
+         Helper.createUser(user);
     }
     @After
     public void tearDown() {
-        Helper.deleteUser();
+        if(user != null) {
+            LoginUser loginUser = new LoginUser(user.getEmail(), user.getPassword());
+            if (Helper.loginUser(loginUser).statusCode() == SC_OK) {
+                Helper.deleteUser(loginUser);
+            }
+        }
     }
     // вход по кнопке «Войти в аккаунт» на главной;
     @DisplayName("Вход через кнопку «Войти в аккаунт» на главной странице")
@@ -31,7 +47,7 @@ public class LoginTest extends BaseTestUI {
         mainPage.clickLoginAccountBtn();
         LoginPage loginPage = new LoginPage(driver);
         if (loginPage.isLoginPageOpened()) {
-            loginPage.login(Helper.email, Helper.password);
+            loginPage.login(user.getEmail(), user.getPassword());
             Assert.assertTrue(mainPage.createOrderBtn().isDisplayed());
         }
     }
@@ -45,7 +61,7 @@ public class LoginTest extends BaseTestUI {
         mainPage.clickPersonalAccountBtn();
         LoginPage loginPage = new LoginPage(driver);
     if (loginPage.isLoginPageOpened()) {
-        loginPage.login(Helper.email, Helper.password);
+        loginPage.login(user.getEmail(), user.getPassword());
         Assert.assertTrue(mainPage.createOrderBtn().isDisplayed());
     }
     }
@@ -59,7 +75,7 @@ public class LoginTest extends BaseTestUI {
         registerPage.clickLoginBtn_onRegisterPage();
         LoginPage loginPage = new LoginPage(driver);
         if (loginPage.isLoginPageOpened()) {
-            loginPage.login(Helper.email, Helper.password);
+            loginPage.login(user.getEmail(), user.getPassword());
             MainPage mainPage = new MainPage(driver);
             Assert.assertTrue(mainPage.createOrderBtn().isDisplayed());
         }
@@ -74,7 +90,7 @@ public class LoginTest extends BaseTestUI {
         loginPage.clickRecoverPasswordBtn();
         RecoverPasswordPage recoverPasswordPage = new RecoverPasswordPage(driver);
         recoverPasswordPage.clickLoginBtn_onRecoverPage();
-            loginPage.login(Helper.email, Helper.password);
+            loginPage.login(user.getEmail(), user.getPassword());
             MainPage mainPage = new MainPage(driver);
             Assert.assertTrue(mainPage.createOrderBtn().isDisplayed());
     }
