@@ -1,15 +1,12 @@
 import com.github.javafaker.Faker;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
-import org.junit.Assert;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import page.LoginPage;
 import page.RegisterPage;
-import java.time.Duration;
-import static page.LoginPage.URL_LOGIN;
+import static org.junit.Assert.assertTrue;
 
 
 public class RegisterTests extends BaseTestUI {
@@ -32,9 +29,7 @@ public class RegisterTests extends BaseTestUI {
         registerPage.openRegisterPage();
         registerPage.registerUser(name, email, password);
         LoginPage loginPage = new LoginPage(driver);
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.urlToBe(URL_LOGIN));
-        Assert.assertTrue("", loginPage.loginText().isDisplayed());
+        assertTrue(loginPage.isLoginPageOpened());
     }
     @DisplayName("Ошибка регистрации при неверном пароле")
     @Description("Проверка обработки ошибки при регистрации: ввод пароля меньше 6 символов, подтверждение отображения сообщения об ошибке.")
@@ -43,6 +38,6 @@ public class RegisterTests extends BaseTestUI {
         RegisterPage registerPage = new RegisterPage(driver);
         registerPage.openRegisterPage();
         registerPage.registerUser(name, email, "pass");
-        Assert.assertTrue("", registerPage.errorPassword().isDisplayed());
+        assertTrue( registerPage.errorPassword().isDisplayed());
     }
 }
